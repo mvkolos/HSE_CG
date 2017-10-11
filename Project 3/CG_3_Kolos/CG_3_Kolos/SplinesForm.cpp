@@ -11,7 +11,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	return 0;
 }
 
-void CG_3_Kolos::SplinesForm::Bezier(System::Drawing::Graphics ^g)
+void CG_3_Kolos::SplinesForm::NBezier(System::Drawing::Graphics ^ g)//выбор алгоритма
+{
+	bezier.Clear();
+	if (deCasteljau)
+	{
+		BezierDeCasteljau(g);
+	}
+	else 
+	{
+		Bezier(g);
+	}
+}
+void CG_3_Kolos::SplinesForm::clear()//очистка экрана
+{
+	Graphics^g = Graphics::FromImage(bm);
+
+	g->Clear(Color::FromArgb(192));
+	pictureBox->Invalidate();
+	//points.Clear();
+	bezier.Clear();
+}
+void CG_3_Kolos::SplinesForm::Bezier(System::Drawing::Graphics ^g)//классическая реализация
 {
 	int n = points.Count;
 	float** coord = new float*[Utils::DIMENSIONS];
@@ -54,15 +75,16 @@ void CG_3_Kolos::SplinesForm::Bezier(System::Drawing::Graphics ^g)
 		}
 		
 		float** res = Utils::MatMul(step1, tt, shape1, t_shape);
-		g->DrawRectangle(Pens::Black, (int)res[0][0], (int)res[1][0], 1, 1);
 		bezier.Add(Point(res[0][0], res[1][0]));
 		t += 0.01f;
 	}
+	drawBezier(g);
 	
 }
 
-void CG_3_Kolos::SplinesForm::CubicBezier(System::Drawing::Graphics ^ g,  int offset)
+void CG_3_Kolos::SplinesForm::CubicBezier(System::Drawing::Graphics ^ g,  int offset)//кубическая кривая
 {
+	bezier.Clear();
 	int n = 4;
 	float** coord = new float*[Utils::DIMENSIONS];
 	
@@ -99,13 +121,14 @@ void CG_3_Kolos::SplinesForm::CubicBezier(System::Drawing::Graphics ^ g,  int of
 		}
 
 		float** res = Utils::MatMul(step1, tt, shape1, t_shape);
-		g->DrawRectangle(Pens::Black, (int)res[0][0], (int)res[1][0], 1, 1);
-		//bezier.Add(Point(res[0][0], res[1][0]));
+		//g->DrawRectangle(Pens::Black, (int)res[0][0], (int)res[1][0], 1, 1);
+		bezier.Add(Point(res[0][0], res[1][0]));
 		t += 0.01f;
 	}
+	drawBezier(g);
 }
 
-void CG_3_Kolos::SplinesForm::ComposedBezier(System::Drawing::Graphics ^ g)
+void CG_3_Kolos::SplinesForm::ComposedBezier(System::Drawing::Graphics ^ g)//составная кривая с добавочной точкой
 {
 	int n = points.Count;
 	
@@ -115,7 +138,7 @@ void CG_3_Kolos::SplinesForm::ComposedBezier(System::Drawing::Graphics ^ g)
 	}
 }
 
-void CG_3_Kolos::SplinesForm::ContinueLine()
+void CG_3_Kolos::SplinesForm::ContinueLine()//добавление точки для соблюдения условий гладкости
 {
 	Point last = points[points.Count - 1];
 	Point prelast = points[points.Count - 2];
@@ -130,18 +153,8 @@ void CG_3_Kolos::SplinesForm::ContinueLine()
 	points.Add(next);
 }
 
-void CG_3_Kolos::SplinesForm::checkClosure()
-{
-	int n = points.Count;
-	float ratio1 = (points[0].X - points[n - 2].X) *(points[0].Y - points[n - 2].Y);
-	float ratio2 = (points[1].X - points[n - 2].X) * (points[1].Y - points[n - 2].Y);
-	textBoxDebug->Text = ratio1.ToString() + " "+ratio2.ToString();
-	readyToClose = (ratio1 == ratio2);
 
-
-}
-
-void CG_3_Kolos::SplinesForm::CloseBezier(System::Drawing::Graphics ^ g)
+void CG_3_Kolos::SplinesForm::CloseBezier(System::Drawing::Graphics ^ g)//замыкание с помощью добавочных точек
 {
 	if (pointCount % 2 != 0)
 	{
@@ -160,9 +173,54 @@ void CG_3_Kolos::SplinesForm::CloseBezier(System::Drawing::Graphics ^ g)
 	closure.Add(points[points.Count - 2]);
 
 	CubicBezier(g, -1);
-	g->DrawEllipse(Pens::Magenta, next.X, next.Y, 5,5);
-	pictureBox->Invalidate();
+	
 }
+
+void CG_3_Kolos::SplinesForm::drawBezier(System::Drawing::Graphics ^ g)//отрисовка кривой по массиву
+{
+	int n = bezier.Count;
+	for (int i = 0; i < n-1; i++)
+	{
+		g->DrawLine(Pens::Black, bezier[i], bezier[i + 1]);
+	}
+
+}
+
+
+
+/*рекурсивный алгоритм Костельжо разделен на два этапа из-за разной скорости сходимости по X и Y*/
+void CG_3_Kolos::SplinesForm::BezierDeCasteljau(System::Drawing::Graphics ^ g)//реализация Кастельжо
+{
+	bezier.Clear();
+	float delta = 0.01f;
+	int order = points.Count-1;
+	for (float t = 0; t <= 1; t += delta) {
+		
+		bezier.Add(Point(deCasteljauX(order, 0, t), deCasteljauY(order, 0, t)));
+	}
+	drawBezier(g);
+
+}
+
+
+
+
+float CG_3_Kolos::SplinesForm::deCasteljauX(int i, int j, float t)//рекурсивный поиск по X
+{
+	if (i == 1) {
+		return (1 - t) * points[j].X + t * points[j + 1].X;
+	}
+	return (1 - t) * deCasteljauX(i - 1, j, t) + t * deCasteljauX(i - 1, j + 1, t);
+}
+
+float CG_3_Kolos::SplinesForm::deCasteljauY(int i, int j, float t)//рекурсивный поиск по Y
+{
+	if (i == 1) {
+		return (1 - t) * points[j].Y + t * points[j + 1].Y;
+	}
+	return (1 - t) * deCasteljauY(i - 1, j, t) + t * deCasteljauY(i - 1, j + 1, t);
+}
+
 
 
 
