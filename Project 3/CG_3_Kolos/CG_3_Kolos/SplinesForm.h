@@ -48,13 +48,17 @@ namespace CG_3_Kolos {
 		void CubicBezier(System::Drawing::Graphics ^g, int offset);
 		void ComposedBezier(System::Drawing::Graphics ^g);
 		void ContinueLine();
+		void checkClosure();
+		void CloseBezier(System::Drawing::Graphics ^ g);
 
 		
 
 		System::Collections::Generic::List<Point> points;
+		System::Collections::Generic::List<Point> closure;
 		System::Collections::Generic::List<Point> bezier;
 		Bitmap ^bm;	
-		int pointCount = 0;;
+		int pointCount = 0;
+		bool readyToClose = false;
 		float** CubicMatrix = new float*[4]{
 			new float[4]{ 1,-3,3,-1 },
 			new float[4]{ 0,3,-6,3 },
@@ -130,7 +134,10 @@ namespace CG_3_Kolos {
 	}
 	private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) {
 		Graphics^ g = Graphics::FromImage(bm);
-		
+		if (pointCount > 3)
+		{
+			CloseBezier(g);
+		}
 		
 		pictureBox->Invalidate();
 	}
@@ -147,9 +154,10 @@ namespace CG_3_Kolos {
 		}
 		if (pointCount % 4 == 0) {
 			ComposedBezier(g);
+			
 		}
 		
-		textBoxDebug->Text = (pointCount%4).ToString();
+		//textBoxDebug->Text = (readyToClose).ToString();
 		pictureBox->Invalidate();
 	}
 };

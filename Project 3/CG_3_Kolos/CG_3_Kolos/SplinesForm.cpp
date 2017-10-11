@@ -72,8 +72,15 @@ void CG_3_Kolos::SplinesForm::CubicBezier(System::Drawing::Graphics ^ g,  int of
 	}
 	for (int i = 0; i < n; i++)
 	{
-		coord[0][i] = points[i+offset].X;
-		coord[1][i] = points[i + offset].Y;
+		if (offset < 0)
+		{
+			coord[0][i] = closure[i].X;
+			coord[1][i] = closure[i].Y;
+		}
+		else {
+			coord[0][i] = points[i + offset].X;
+			coord[1][i] = points[i + offset].Y;
+		}
 	}
 	int shape1[2] = { Utils::DIMENSIONS, n };
 	int shape2[2] = { n, n };
@@ -123,29 +130,39 @@ void CG_3_Kolos::SplinesForm::ContinueLine()
 	points.Add(next);
 }
 
-//int CG_3_Kolos::SplinesForm::BinCoeff(int i, int j, int n)
-//{
-//	int sign = (j - i) % 2 == 0 ? 1 : -1;
-//	int q = C(n,j);
-//	int b = C(j,i);
-//	int res = sign*q*b;
-//	return res;
-//}
-//
-//int CG_3_Kolos::SplinesForm::C(int n, int k)
-//{
-//	if (k == 0 || k == n)
-//	{
-//		return 1;
-//	}
-//	if (n<k)
-//	{
-//		return 0;
-//	}
-//
-//	// Recur
-//	return  C(n - 1, k - 1) + C(n - 1, k);
-//}
+void CG_3_Kolos::SplinesForm::checkClosure()
+{
+	int n = points.Count;
+	float ratio1 = (points[0].X - points[n - 2].X) *(points[0].Y - points[n - 2].Y);
+	float ratio2 = (points[1].X - points[n - 2].X) * (points[1].Y - points[n - 2].Y);
+	textBoxDebug->Text = ratio1.ToString() + " "+ratio2.ToString();
+	readyToClose = (ratio1 == ratio2);
+
+
+}
+
+void CG_3_Kolos::SplinesForm::CloseBezier(System::Drawing::Graphics ^ g)
+{
+	if (pointCount % 2 != 0)
+	{
+		ContinueLine();
+	}
+
+	float deltaX = points[0].X - points[1].X;
+	float deltaY = points[0].Y - points[1].Y;
+
+	Point next = Point(points[0].X+ deltaX, points[0].Y+ deltaY);
+
+	closure.Clear();
+	closure.Add(points[0]);
+	closure.Add(next);
+	closure.Add(points[points.Count - 1]);
+	closure.Add(points[points.Count - 2]);
+
+	CubicBezier(g, -1);
+	g->DrawEllipse(Pens::Magenta, next.X, next.Y, 5,5);
+	pictureBox->Invalidate();
+}
 
 
 
