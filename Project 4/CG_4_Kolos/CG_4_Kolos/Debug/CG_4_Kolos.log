@@ -1,0 +1,17 @@
+﻿  Form3d.cpp
+d:\users\mvkol\source\repos\cg_4_kolos\cg_4_kolos\Form3d.h(18): warning C4305: инициализация: усечение из "double" в "const float"
+d:\users\mvkol\source\repos\cg_4_kolos\cg_4_kolos\Form3d.h(19): warning C4305: инициализация: усечение из "double" в "const float"
+d:\users\mvkol\source\repos\cg_4_kolos\cg_4_kolos\Form3d.h(384): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+d:\users\mvkol\source\repos\cg_4_kolos\cg_4_kolos\Form3d.h(387): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+d:\users\mvkol\source\repos\cg_4_kolos\cg_4_kolos\Form3d.h(400): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+d:\users\mvkol\source\repos\cg_4_kolos\cg_4_kolos\Form3d.h(407): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+d:\users\mvkol\source\repos\cg_4_kolos\cg_4_kolos\Form3d.h(414): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+d:\users\mvkol\source\repos\cg_4_kolos\cg_4_kolos\Form3d.h(431): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+d:\users\mvkol\source\repos\cg_4_kolos\cg_4_kolos\Form3d.h(433): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+Form3d.cpp(47): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+  Shape.cpp
+Shape.cpp(38): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+Shape.cpp(39): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+Shape.cpp(72): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
+  Создание кода...
+  CG_4_Kolos.vcxproj -> D:\Users\mvkol\source\repos\CG_4_Kolos\Debug\CG_4_Kolos.exe
